@@ -1307,10 +1307,13 @@ describe("Composer slash-command submit routing", () => {
     useChatStore.setState({ sessionHarness: "claude-native", clearContext });
     try {
       const onShowReconnectHelp = vi.fn();
+      const info = { ...FALLBACK_SERVER_INFO, session_event_types: ["clear"] };
       const { rerender } = render(
-        <Composer
-          {...composerProps({ onShowReconnectHelp, unreachable: true, sendReconnectsArca: true })}
-        />,
+        <CapabilitiesProvider info={info}>
+          <Composer
+            {...composerProps({ onShowReconnectHelp, unreachable: true, sendReconnectsArca: true })}
+          />
+        </CapabilitiesProvider>,
       );
       fireEvent.change(textarea(), { target: { value: "/clear" } });
       fireEvent.keyDown(textarea(), { key: "Enter" });
@@ -1320,7 +1323,11 @@ describe("Composer slash-command submit routing", () => {
       // The menu completes the command, so it stays ready to send.
       expect(textarea().value.trim()).toBe("/clear");
 
-      rerender(<Composer {...composerProps({ onShowReconnectHelp })} />);
+      rerender(
+        <CapabilitiesProvider info={info}>
+          <Composer {...composerProps({ onShowReconnectHelp })} />
+        </CapabilitiesProvider>,
+      );
       fireEvent.keyDown(textarea(), { key: "Enter" });
       expect(clearContext).toHaveBeenCalledOnce();
     } finally {
